@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AUTOCERTIFY</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .nature-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 100, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .template-thumb {
+            width: 200px;
+            height: auto;
+            margin: 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+        }
+
+        .template-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1, h3 {
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1>AUTOCERTIFY</h1>
+        <p class="lead"><B>
+          Generate and send certificates</B></p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+        <div>{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Upload New Template -->
+    <div class="nature-card">
+        <h3>📤 Upload a New Certificate Template</h3>
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_template') }}">
+            <div class="mb-3">
+                <label class="form-label">Select JPG or PNG file</label>
+                <input type="file" class="form-control" name="new_template" accept=".jpg,.png" required>
+            </div>
+            <button type="submit" class="btn btn-success">Upload Template</button>
+        </form>
+    </div>
+
+    <!-- Certificate Generation Form -->
+    <div class="nature-card">
+        <h3>🎓 Generate and Send Certificate</h3>
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- Sender Email -->
+            <div class="mb-3">
+                <label class="form-label">Sender Gmail</label>
+                <input type="email" class="form-control" name="sender_email" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Gmail App Password</label>
+                <input type="password" class="form-control" name="sender_pass" required>
+            </div>
+
+            <!-- Template Selection -->
+            <div class="mb-3">
+                <label class="form-label">Select a Certificate Template</label>
+                <div class="template-container">
+                    {% for template in template_list %}
+                    <label>
+                        <input type="radio" name="selected_template" value="{{ template }}" required>
+                        <img src="{{ url_for('static', filename='certificate_templates/' ~ template) }}" 
+                        class="template-thumb">
+                        <div class="text-center small">{{ template }}</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Font Selection -->
+            <div class="mb-3">
+                <label class="form-label">Select Font</label>
+                <select class="form-select" name="selected_font">
+                    {% for font in font_list %}
+                    <option value="{{ font }}">{{ font }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Excel Upload -->
+            <div class="mb-3">
+                <label class="form-label">Upload Excel (.xlsx) with 'NAME' and 'GMAIL' columns</label>
+                <input type="file" class="form-control" name="excel_file" accept=".xlsx">
+            </div>
+
+            <p class="text-center fw-bold">— OR —</p>
+
+            <!-- Manual Entry -->
+            <div class="mb-3">
+                <label class="form-label">Manual Name</label>
+                <input type="text" class="form-control" name="manual_name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Manual Email</label>
+                <input type="email" class="form-control" name="manual_email">
+            </div>
+
+            <!-- Preview or Send -->
+            <div class="text-center">
+                <button type="submit" name="preview" value="true" class="btn btn-outline-success me-2">🔍 Preview Certificate</button>
+                <button type="submit" name="preview" value="false" class="btn btn-success">📧 Send Certificate</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Certificate Preview -->
+    {% if preview_path %}
+    <div class="nature-card text-center">
+        <h3>🖼️ Certificate Preview</h3>
+        <img src="{{ preview_path }}" class="preview-img">
+        <br>
+        <a href="{{ url_for('download_preview', path=preview_path) }}" class="btn btn-primary mt-3">⬇️ Download Preview</a>
+    </div>
+    {% endif %}
+
+    <!-- History -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('history') }}" class="btn btn-outline-dark">📜 View Sent History</a>
+    </div>
+</div>
+
+<!-- Bootstrap JS (optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
