@@ -24,6 +24,11 @@ def get_available_fonts():
 
 def is_valid_email(email):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+from flask import send_from_directory
+
+@app.route("/generated_certificates/<filename>")
+def serve_generated_file(filename):
+    return send_from_directory(OUTPUT_DIR, filename)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -100,10 +105,10 @@ def index():
             image.save(output_path, "PDF")
 
             if preview_only:
-                preview_image_path = os.path.join(OUTPUT_DIR, f"{safe_name}.png")
+               preview_filename = f"{safe_name}.png"
+                preview_image_path = os.path.join(OUTPUT_DIR, preview_filename)
                 image.save(preview_image_path)
-                preview_path = preview_image_path.replace("\\", "/")
-                break
+                preview_path = url_for("serve_generated_file", filename=preview_filename)
 
             try:
                 yag = yagmail.SMTP(user=sender_email, password=sender_pass)
